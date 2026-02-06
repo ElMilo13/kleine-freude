@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>7 Tage Überraschung ❤️</title>
+
+  <style>
+    :root{
+      --bg: #ffe6f0;
+      --card: rgba(255,255,255,0.75);
+      --shadow: 0 10px 30px rgba(0,0,0,.12);
+      --radius: 18px;
+      --text: #1f1f1f;
+      --muted: rgba(0,0,0,.55);
+      --pink1:#ff4fa3;
+      --pink2:#ff89c2;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 50% 0%, #fff 0%, var(--bg) 45%, #ffd3e7 100%);
+      color:var(--text);
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 18px 14px 28px;
+    }
+
+    h1{
+      margin: 10px 0 6px;
+      font-size: clamp(22px, 5.2vw, 34px);
+      text-align:center;
+      letter-spacing:.2px;
+    }
+    .sub{
+      text-align:center;
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: clamp(13px, 3.6vw, 15px);
+    }
+
+    /* Grid: mobile first */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    @media (min-width: 520px){
+      .grid{ grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    }
+    @media (min-width: 900px){
+      .grid{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
+    .tile{
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,.55);
+      backdrop-filter: blur(8px);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px 12px;
+      position:relative;
+      overflow:hidden;
+      cursor:pointer;
+      min-height: 132px;
+      transition: transform .18s ease, box-shadow .18s ease;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tile:active{ transform: scale(.98); }
+    .tile:hover{ transform: translateY(-2px); }
+
+    .day{
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing:.6px;
+      opacity:.9;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:10px;
+    }
+    .status{
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    /* Gift box */
+    .gift{
+      width: 86px;
+      height: 86px;
+      margin: 4px auto 0;
+      position: relative;
+      transform-origin: center;
+    }
+    .gift .box{
+      position:absolute;
+      bottom:0;
+      left:50%;
+      transform: translateX(-50%);
+      width: 86px;
+      height: 56px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--pink2), var(--pink1));
+      box-shadow: inset 0 -10px 0 rgba(0,0,0,.08);
+    }
+    .gift .stripe{
+      position:absolute;
+      bottom:0;
+      left:50%;
+      transform: translateX(-50%);
+      width: 16px;
+      height: 56px;
+      background: rgba(255,255,255,.85);
+      border-radius: 10px;
+    }
+    .gift .lid{
+      position:absolute;
+      left:50%;
+      transform: translateX(-50%);
+      width: 94px;
+      height: 26px;
+      top: 18px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #ffb6dc, #ff5aa8);
+      box-shadow: inset 0 -7px 0 rgba(0,0,0,.08);
+      transform-origin: 50% 100%;
+    }
+    .gift .bow{
+      position:absolute;
+      top: 2px;
+      left:50%;
+      transform: translateX(-50%);
+      width: 70px;
+      height: 40px;
+    }
+    .gift .bow:before,
+    .gift .bow:after{
+      content:"";
+      position:absolute;
+      top: 10px;
+      width: 28px;
+      height: 18px;
+      border-radius: 18px 18px 18px 18px;
+      border: 5px solid rgba(255,255,255,.9);
+      background: rgba(255,255,255,.12);
+    }
+    .gift .bow:before{ left: 2px; transform: rotate(-12deg); }
+    .gift .bow:after{ right: 2px; transform: rotate(12deg); }
+    .gift .knot{
+      position:absolute;
+      top: 18px;
+      left:50%;
+      transform: translateX(-50%);
+      width: 16px;
+      height: 16px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.9);
+      box-shadow: 0 2px 0 rgba(0,0,0,.08);
+    }
+
+    /* Locked state */
+    .tile.locked{
+      opacity:.55;
+      cursor:not-allowed;
+      filter: grayscale(.15);
+    }
+    .tile.locked:hover{ transform:none; }
+    .lockBadge{
+      position:absolute;
+      inset: 10px 10px auto auto;
+      background: rgba(0,0,0,.65);
+      color: #fff;
+      padding: 6px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing:.3px;
+    }
+
+    /* Open animation */
+    .tile.opening .gift{
+      animation: giftPop .35s ease both;
+    }
+    .tile.opening .lid{
+      animation: lidOpen .55s cubic-bezier(.2,.9,.2,1) both;
+    }
+    @keyframes lidOpen{
+      0%{ transform: translateX(-50%) rotate(0deg); }
+      100%{ transform: translateX(-50%) rotate(-28deg) translateY(-6px); }
+    }
+    @keyframes giftPop{
+      0%{ transform: scale(1); }
+      60%{ transform: scale(1.06); }
+      100%{ transform: scale(1.02); }
+    }
+
+    /* Modal */
+    .modal{
+      position: fixed;
+      inset: 0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 14px;
+      background: rgba(0,0,0,.55);
+      z-index: 50;
+    }
+    .modal.show{ display:flex; animation: fadeIn .18s ease both; }
+    @keyframes fadeIn{ from{ opacity:0 } to{ opacity:1 } }
+
+    .panel{
+      width: min(720px, 100%);
+      background: rgba(255,255,255,.92);
+      border-radius: 22px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+      overflow:hidden;
+      transform: translateY(8px);
+      animation: panelIn .22s ease both;
+    }
+    @keyframes panelIn{
+      from{ transform: translateY(14px) scale(.99); opacity:.6; }
+      to{ transform: translateY(0) scale(1); opacity:1; }
+    }
+
+    .panelTop{
+      padding: 14px 14px 10px;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      justify-content:space-between;
+    }
+    .panel h2{
+      margin: 0;
+      font-size: clamp(18px, 5.2vw, 26px);
+      line-height:1.15;
+    }
+    .close{
+      border:none;
+      background: rgba(0,0,0,.07);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 900;
+      cursor:pointer;
+      font-size: 16px;
+    }
+    .close:active{ transform: scale(.98); }
+
+    .panelBody{
+      padding: 0 14px 14px;
+    }
+    .photo{
+      width:100%;
+      border-radius: 18px;
+      overflow:hidden;
+      background:#fff;
+      border: 1px solid rgba(0,0,0,.07);
+    }
+    .photo img{
+      width:100%;
+      display:block;
+      height:auto;
+      transform: scale(1.02);
+      animation: imgIn .35s ease both;
+    }
+    @keyframes imgIn{
+      from{ opacity:0; transform: scale(1.06); }
+      to{ opacity:1; transform: scale(1.02); }
+    }
+
+    .footer{
+      margin-top: 18px;
+      text-align:center;
+      font-size: clamp(18px, 5vw, 30px);
+      font-weight: 900;
+      padding: 14px 10px 6px;
+    }
+
+    /* Tiny floating hearts */
+    .heart{
+      position: fixed;
+      bottom: -20px;
+      font-size: 18px;
+      opacity: .25;
+      animation: floatUp linear forwards;
+      pointer-events:none;
+      z-index: 1;
+    }
+    @keyframes floatUp{
+      from{ transform: translateY(0) translateX(0) rotate(0); opacity:.28; }
+      to{ transform: translateY(-110vh) translateX(var(--drift)) rotate(18deg); opacity:0; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>💖 Deine 7 Tage Überraschung 💖</h1>
+    <p class="sub">Jeden Tag geht ein neues Geschenk auf 🎁</p>
+
+    <div id="grid" class="grid"></div>
+
+    <div class="footer">von dein gut aussehender lustige absolute inteligenter daddy könig</div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="panel" role="dialog" aria-modal="true">
+      <div class="panelTop">
+        <h2 id="modalTitle"></h2>
+        <button class="close" id="closeBtn">✕</button>
+      </div>
+      <div class="panelBody">
+        <div class="photo">
+          <img id="modalImg" alt="Überraschungsbild" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ✅ Start: "diesen Montag"
+    // Da dein Systemdatum gerade schon auf Februar 2026 passt, ist das ok.
+    // Wenn du später nochmal verwendest: stell das Datum einfach hier um.
+    const startDate = new Date(2026, 1, 9); // 9 = Montag (Februar = 1)
+
+    const surprises = [
+      "🎬 Filmabend deiner Wahl",
+      "💆 30 Minuten Massage",
+      "😎 20 Komplimente an einem Tag",
+      "✈️ Du darfst einen Ausflug innerhalb der Schweiz entscheiden",
+      "🍽️ Du entscheidest, wo wir essen gehen",
+      "💐 Du bekommst einen Blumenstrauss",
+      "❤️ Überraschungsdate"
+    ];
+
+    const grid = document.getElementById("grid");
+    const modal = document.getElementById("modal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalImg = document.getElementById("modalImg");
+    const closeBtn = document.getElementById("closeBtn");
+
+    function daysBetween(a, b){
+      const ms = 1000 * 60 * 60 * 24;
+      const aMid = new Date(a.getFullYear(), a.getMonth(), a.getDate());
+      const bMid = new Date(b.getFullYear(), b.getMonth(), b.getDate());
+      return Math.floor((aMid - bMid) / ms);
+    }
+
+    const today = new Date();
+    const diffDays = daysBetween(today, startDate); // 0 = Tag1 offen
+
+    function openModal(dayIndex){
+      modalTitle.textContent = surprises[dayIndex];
+      modalImg.src = `tag${dayIndex + 1}.jpg`;
+      modal.classList.add("show");
+      modal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeModal(){
+      modal.classList.remove("show");
+      modal.setAttribute("aria-hidden", "true");
+      // optional: Bild leeren
+      // modalImg.src = "";
+    }
+
+    closeBtn.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => { if(e.target === modal) closeModal(); });
+    document.addEventListener("keydown", (e) => { if(e.key === "Escape") closeModal(); });
+
+    function tileHTML(day, isLocked){
+      return `
+        <div class="tile ${isLocked ? "locked" : ""}" data-day="${day}">
+          <div class="day">
+            <span>TAG ${day + 1}</span>
+            <span class="status">${isLocked ? "🔒" : "🎁"}</span>
+          </div>
+
+          <div class="gift" aria-hidden="true">
+            <div class="bow"><div class="knot"></div></div>
+            <div class="lid"></div>
+            <div class="box"></div>
+            <div class="stripe"></div>
+          </div>
+
+          ${isLocked ? `<div class="lockBadge">LOCKED</div>` : ``}
+        </div>
+      `;
+    }
+
+    // Render 7 Geschenkboxen
+    for(let i=0;i<7;i++){
+      const locked = i > diffDays;
+      grid.insertAdjacentHTML("beforeend", tileHTML(i, locked));
+    }
+
+    // Click handling
+    grid.addEventListener("click", (e) => {
+      const tile = e.target.closest(".tile");
+      if(!tile) return;
+      if(tile.classList.contains("locked")) return;
+
+      const day = Number(tile.dataset.day);
+
+      // Öffnungsanimation auf der Box
+      tile.classList.add("opening");
+
+      // Nach kurzer Animation Modal öffnen
+      setTimeout(() => {
+        openModal(day);
+        // Animation zurücksetzen, damit's beim nächsten Klick wieder spielt
+        tile.classList.remove("opening");
+      }, 420);
+    });
+
+    // Kleine Herzchen im Hintergrund (leicht, nicht zu viel)
+    function spawnHeart(){
+      const h = document.createElement("div");
+      h.className = "heart";
+      h.textContent = Math.random() > 0.5 ? "💗" : "💖";
+      h.style.left = Math.random() * 100 + "vw";
+      h.style.setProperty("--drift", (Math.random()*120 - 60) + "px");
+      h.style.animationDuration = (6 + Math.random()*5) + "s";
+      h.style.fontSize = (14 + Math.random()*14) + "px";
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 12000);
+    }
+    setInterval(spawnHeart, 650);
+  </script>
+</body>
+</html>
